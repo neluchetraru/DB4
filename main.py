@@ -2,14 +2,13 @@ import machine
 import os
 import _thread
 import time
-from pumpPWM import PumpPWM
 from read_temp import read_temp, init_temp_sensor
 from cooler import Cooler
 from pump import Pump
 
 
-pump1 = Pump(15, 12)
-pump2 = PumpPWM(33, 27)
+pump1 = Pump(15, 12, False)
+pump2 = Pump(33, 27, True)
 cooler = Cooler(14)
 
 
