@@ -14,7 +14,7 @@ import utime
 ADC_DELAY = 10
 DAC_DELAY = 5
 
-ADC_PIN_NO = 12  # changed!!!
+ADC_PIN_NO = 32
 DAC_PIN_NO = 25
 
 NUM_SAMPLES = 50
