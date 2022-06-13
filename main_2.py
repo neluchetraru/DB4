@@ -4,6 +4,8 @@ import time
 from read_temp import read_temp
 from cooler import Cooler
 from pump import Pump
+import random
+from MQTT import MQTT
 
 pump1 = Pump(15, 12, False)
 pump2 = Pump(33, 27, True)
@@ -30,36 +32,36 @@ u_ts = []
 
 
 temp_file_name = "temp #.txt"
-ut_file_name = "ut #.txt"
+# ut_file_name = "ut #.txt"
 
-outputVersion = 1
-files = os.listdir()
-files.sort()
-
-
-for file in files[::-1]:
-    if file.startswith('temp'):
-        try:
-            outputVersion = int(file.split()[1].split('.')[0]) + 1
-        except:
-            pass
-
-
-temp_file_name = temp_file_name.replace("#", str(outputVersion))
-ut_file_name = ut_file_name.replace("#", str(outputVersion))
+temp_file_name = temp_file_name.replace("#", str(random.randint(0, 245887732)))
+# ut_file_name = ut_file_name.replace("#", str(outputVersion))
 
 print(temp_file_name)
-open(temp_file_name, 'w')
-open(ut_file_name, 'w')
+with open(temp_file_name, 'w') as f:
+    f.close()
 
+# open(ut_file_name, 'w')
+
+
+# Web server
+mqtt = MQTT()
+mqtt.connectWIFI()
+mqtt.connectMQTT()
 
 size = 10
+
 while True:
+
+    # test
+    # pump1.stepChange()
+
+    # end test
     if time.ticks_diff(time.ticks_ms(), start_time) >= 5000:
         counter -= 5
         start_time = time.ticks_ms()
         temp = read_temp()
-        error = 19 - temp
+        error = temp - 19
         if len(errors) > size:
             errors.pop(0)
             errors.append(error)
@@ -81,30 +83,36 @@ while True:
         else:
             u_ts.append(u_t)
 
-        print(temp)
+        print("temp: " + str(temp))
+        try:
+            mqtt.publish('temperature', temp)
+        except:
+            print('MQTT connection error')
         with open(temp_file_name, 'a') as f:
-            f.write("{},{}".format(str(temp), str(u_t)))
+            f.write(str(temp) + "\n")
             f.close()
 
-        # with open(ut_file_name, 'a') as f:
-        #     f.write(str(u_t) + "\n")
-        #     f.close()
-
-        if temp <= 19.5:
+        if u_t <= 0.5:
             cooler.min()
+            pump2.pump.freq(300)
+        elif u_t > 0.5 and u_t <= 6:
+            cooler.max()
+            pump2.pump.freq(int(15000/6*u_t))
         else:
             cooler.max()
+            pump2.pump.freq(15000)
 
-        if u_t < 0:
-            temporary = 15000/abs(min(u_ts))
-            print(temporary*abs(u_t))
-            if temporary*abs(u_t) <= 15000:
-                pump2.pump.freq(int(temporary*abs(u_t)))
-            else:
-                pump2.pump.freq(15000)
-        else:
-            pump2.pump.freq(0)
-        print(u_t)
+        # if u_t < 0:
+        #     temporary = 15000/abs(min(u_ts))
+        #     print(temporary*abs(u_t))
+        #     if temporary*abs(u_t) <= 15000:
+        #         pump2.pump.freq(int(temporary*abs(u_t)))
+        #     else:
+        #         pump2.pump.freq(15000)
+        # else:
+        #     pump2.pump.freq(200)
+        print("u_t: " + str(u_t))
+        print("pump: " + str(pump2.pump.freq()))
 
     if counter == 0:
         break
