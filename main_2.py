@@ -22,19 +22,24 @@ start_time = time.ticks_ms()
 pump2.maxSpeed()
 cooler.max()
 
-counter = 10*60
+counter = 30*60
 
 Pgain = 2
 Dgain = 0
-Igain = 0.5
+Igain = 0.15
 
 u_ts = []
 
 
 temp_file_name = "temp #.txt"
 # ut_file_name = "ut #.txt"
+ver = 1
+for file in os.listdir():
+    if file.startswith("temp"):
+        ver += 1
 
-temp_file_name = temp_file_name.replace("#", str(random.randint(0, 245887732)))
+
+temp_file_name = temp_file_name.replace("#", str(ver))
 # ut_file_name = ut_file_name.replace("#", str(outputVersion))
 
 print(temp_file_name)
@@ -45,9 +50,9 @@ with open(temp_file_name, 'w') as f:
 
 
 # Web server
-mqtt = MQTT()
-mqtt.connectWIFI()
-mqtt.connectMQTT()
+# mqtt = MQTT()
+# mqtt.connectWIFI()
+# mqtt.connectMQTT()
 
 size = 10
 
@@ -84,10 +89,10 @@ while True:
             u_ts.append(u_t)
 
         print("temp: " + str(temp))
-        try:
-            mqtt.publish('temperature', temp)
-        except:
-            print('MQTT connection error')
+        # try:
+        #     mqtt.publish('temperature', temp)
+        # except:
+        #     print('MQTT connection error')
         with open(temp_file_name, 'a') as f:
             f.write(str(temp) + "\n")
             f.close()
@@ -116,3 +121,13 @@ while True:
 
     if counter == 0:
         break
+
+
+# PD = machine.ADC(machine.Pin(36))
+# PD.atten(machine.ADC.ATTN_6DB)
+
+# LED = machine.Pin(21, machine.Pin.OUT)
+# LED.value(1)
+# while True:
+#     print(PD.read())
+#     time.sleep(2)

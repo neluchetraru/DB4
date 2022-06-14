@@ -101,11 +101,31 @@ import matplotlib.pyplot as plt
 # plt.plot(times6, [19] * len(times6))
 # plt.show()
 
-temps7 = []
+# temps7 = []
 
-with open('temp 53762142.txt', 'r') as f:
-    temps7 = f.read().splitlines()
-times7 = [i for i in range(5, len(temps7) * 5 + 5, 5)]
-plt.plot(times7, [float(temp) for temp in temps7])
-plt.plot(times7, [19] * len(times7))
+# with open('temp 53762142.txt', 'r') as f:
+#     temps7 = f.read().splitlines()
+# times7 = [i for i in range(5, len(temps7) * 5 + 5, 5)]
+# plt.plot(times7, [float(temp) for temp in temps7])
+# plt.plot(times7, [19] * len(times7))
+# plt.show()
+
+
+# temps8 = []
+
+# with open('temp 35.txt', 'r') as f:
+#     temps8 = f.read().splitlines()
+# times8 = [i for i in range(5, len(temps8) * 5 + 5, 5)]
+# plt.plot(times8, [float(temp) for temp in temps8])
+# plt.plot(times8, [19] * len(times8))
+# plt.show()
+
+
+temps9 = []
+
+with open('temp 38.txt', 'r') as f:
+    temps9 = f.read().splitlines()
+times9 = [i for i in range(5, len(temps9) * 5 + 5, 5)]
+plt.plot(times9, [float(temp) for temp in temps9])
+plt.plot(times9, [19] * len(times9))
 plt.show()
