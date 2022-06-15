@@ -8,14 +8,14 @@ class Pump:
         self.pump_direction.value(1)
         self.pwm = pwm
         if not pwm:
-            self.pump = Pin(step)
+            self.pump = Pin(step, Pin.OUT)
         else:
             self.pump = PWM(Pin(step))
             self.pump.freq(5000)
 
     def stepChange(self):
         if not self.pwm:
-            self.pump.value(not self.pump_step.value())
+            self.pump.value(1 if self.pump.value() == 0 else 0)
         else:
             pass
 
