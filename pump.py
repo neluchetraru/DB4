@@ -3,9 +3,7 @@ import utime
 
 
 class Pump:
-    def __init__(self, step, direction, pwm):
-        self.pump_direction = Pin(direction, Pin.OUT)
-        self.pump_direction.value(1)
+    def __init__(self, step, pwm):
         self.pwm = pwm
         if not pwm:
             self.pump = Pin(step, Pin.OUT)

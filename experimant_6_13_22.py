@@ -120,17 +120,18 @@ plt.show()
 # plt.show()
 
 
-# temps8 = []
+temps8 = []
 
-# with open('temp 35.txt', 'r') as f:
-#     temps8 = f.read().splitlines()
-# times8 = [i for i in range(5, len(temps8) * 5 + 5, 5)]
-# plt.plot(times8, [float(temp) for temp in temps8])
-# plt.plot(times8, [19] * len(times8))
-# plt.xlabel("Time")
-# plt.ylabel("Temperature")
-# plt.title("PID CONTROL" + "\n" + "I = 0.5, P = 2, D = 0")
-# plt.show()
+with open('temp 35.txt', 'r') as f:
+    temps8 = f.read().splitlines()
+times8 = [i for i in range(5, len(temps8) * 5 + 5, 5)]
+plt.plot(times8, [float(temp) for temp in temps8])
+print([float(temp) for temp in temps8])
+plt.plot(times8, [19] * len(times8))
+plt.xlabel("Time")
+plt.ylabel("Temperature")
+plt.title("PID CONTROL" + "\n" + "I = 0.5, P = 2, D = 0")
+plt.show()
 
 
 # temps9 = []
@@ -139,6 +140,7 @@ plt.show()
 #     temps9 = f.read().splitlines()
 # times9 = [i for i in range(5, len(temps9) * 5 + 5, 5)]
 # plt.plot(times9, [float(temp) for temp in temps9])
+# print([float(temp) for temp in temps9])
 # plt.plot(times9, [19] * len(times9))
 # plt.xlabel("Time")
 # plt.ylabel("Temperature")

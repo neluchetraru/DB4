@@ -22,8 +22,7 @@ def init_temp_sensor(TENP_SENS_ADC_PIN_NO=32):
     return adc
 
 
-def read_temp():
-    temp_sens = init_temp_sensor()
+def read_temp(temp_sens):
     raw_read = []
     for i in range(1, NUM_SAMPLES+1):
         raw_read.append(temp_sens.read())
