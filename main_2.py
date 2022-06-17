@@ -15,26 +15,25 @@ import ssd1306
 TEMPERATURE_FILE_NAME = utils.getNewFileName("temperature")
 OD_FILE_NAME = utils.getNewFileName("OD")
 
-# pump_algae = Pump(15, False)
+pump_algae = Pump(15, False)
 
 global PIDControl
 PIDControl = PID(2, 0.15, 0, 10, TEMPERATURE_FILE_NAME, OD_FILE_NAME)
 
 start_time = time.ticks_ms()
 
-counter = 20*60
 
 # Web server
-# mqtt = MQTT()
-# mqtt.connectWIFI()
-# mqtt.connectMQTT()
+mqtt = MQTT()
+mqtt.connectWIFI()
+mqtt.connectMQTT()
 
-# LED = machine.Pin(21, machine.Pin.OUT)
-# LED.value(1)
+LED = machine.Pin(21, machine.Pin.OUT)
+LED.value(1)
 
-# pd = machine.ADC(machine.Pin(34))
-# pd.atten(machine.ADC.ATTN_6DB)
-# pd.width(machine.ADC.WIDTH_12BIT)
+pd = machine.ADC(machine.Pin(34))
+pd.atten(machine.ADC.ATTN_11DB)
+pd.width(machine.ADC.WIDTH_12BIT)
 
 
 global temp
@@ -47,8 +46,11 @@ i2c = machine.I2C(sda=machine.Pin(23), scl=machine.Pin(22), freq=100000)
 oled = ssd1306.SSD1306_I2C(128, 32, i2c)
 
 # mqtt.subscribeTemp(PIDControl)
+rev = 100
+steps = 0
 
 while True:
+    pump_algae.pump.value(1 if pump_algae.pump.value() == 0 else 0)
     if time.ticks_diff(time.ticks_ms(), time_temp) >= 5000:  # CHANGEEEEEEEEEEEEEEEEEEEE
         temp_sens = init_temp_sensor()
         temp = read_temp(temp_sens)
@@ -59,13 +61,30 @@ while True:
         utils.TempDisplay(oled, temp)
         # print("Desired temperature -> " + str(PIDControl.desired_temp))
         print("Actual temperature -> " + str(temp))
-        # pd.atten(machine.ADC.ATTN_6DB)
-        # pd.width(machine.ADC.WIDTH_12BIT)
-    # if time.ticks_diff(time.ticks_ms(), time_pd) >= 2000:
-    #     value = pd.read()
-    #     # mqtt.publish('algaeConcentration', value)
-    #     print(value)
-    #     time_pd = time.ticks_ms()
-    #     utils.ODdisplay(oled, value)
-    #     utils.saveData(value, OD_FILE_NAME)
-    #     print(PIDControl.test)
+        pd.atten(machine.ADC.ATTN_6DB)
+        pd.width(machine.ADC.WIDTH_12BIT)
+    if time.ticks_diff(time.ticks_ms(), time_pd) >= 2000:
+        value = pd.read()
+        # mqtt.publish('algaeConcentration', value)
+        print(value)
+        time_pd = time.ticks_ms()
+        utils.ODdisplay(oled, value)
+    # utils.saveData(value, OD_FILE_NAME)
+    # print(PIDControl.test)
+
+    steps += 1
+    if (steps / 2) >= 3200:
+        steps = 0
+        rev -= 1
+
+    if rev == 0:
+        break
+
+    # utime.sleep_ms(1)
+
+    # TODO: stop the motor when the system is down
+    # TODO: publish data
+    # TODO: subscribe data
+
+
+# playground

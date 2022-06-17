@@ -38,7 +38,7 @@ class PID:
             self.pump.pump.freq(300)
         elif u_t > 0.5 and u_t <= (self.P*(self.room_temp - self.desired_temp)/2):
             self.cooler.max()
-            self.pump.pump.freq(int(15000/6*u_t))
+            self.pump.pump.freq(int(15000/6*u_t))  # check this
         else:
             self.cooler.max()
             self.pump.pump.freq(15000)

@@ -57,17 +57,17 @@ import matplotlib.pyplot as plt
 # plt.show()
 
 # we put 5 v when temp <=19.5
-temps3 = []
+# temps3 = []
 
-with open('temp 1.txt', 'r') as f:
-    temps4 = f.read().splitlines()
-times4 = [i for i in range(5, len(temps4) * 5 + 5, 5)]
-plt.plot(times4, [float(temp) for temp in temps4])
-plt.plot(times4, [19] * len(times4))
-plt.xlabel("Time")
-plt.ylabel("Temperature")
-plt.title("PID CONTROL" + "\n" + "5v when T < 19.5")
-plt.show()
+# with open('temp 1.txt', 'r') as f:
+#     temps4 = f.read().splitlines()
+# times4 = [i for i in range(5, len(temps4) * 5 + 5, 5)]
+# plt.plot(times4, [float(temp) for temp in temps4])
+# plt.plot(times4, [19] * len(times4))
+# plt.xlabel("Time")
+# plt.ylabel("Temperature")
+# plt.title("PID CONTROL" + "\n" + "5v when T < 19.5")
+# plt.show()
 
 # u_ts4 = []
 # with open('ut 1.txt', 'r') as f:
@@ -122,12 +122,12 @@ plt.show()
 
 temps8 = []
 
-with open('temp 35.txt', 'r') as f:
+with open('PIDlatest.txt', 'r') as f:
     temps8 = f.read().splitlines()
 times8 = [i for i in range(5, len(temps8) * 5 + 5, 5)]
 plt.plot(times8, [float(temp) for temp in temps8])
 print([float(temp) for temp in temps8])
-plt.plot(times8, [19] * len(times8))
+plt.plot(times8, [18] * len(times8))
 plt.xlabel("Time")
 plt.ylabel("Temperature")
 plt.title("PID CONTROL" + "\n" + "I = 0.5, P = 2, D = 0")

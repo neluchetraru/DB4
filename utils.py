@@ -47,10 +47,3 @@ def cleanTXTFiles():
     for files in os.listdir():
         if files.endswith(".txt"):
             os.remove(files)
-
-
-files = ['boot.py', 'read_temp.py', 'pump.py', 'main_2.py',
-         'cooler.py', 'linearize.py', 'ssd1306.py', 'utils.py']
-for file in os.listdir():
-    if not file.endswith('.py'):
-        os.remove(file)
