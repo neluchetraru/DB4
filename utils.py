@@ -11,11 +11,11 @@ def getNewFileName(purpose):
                 ver += 1
         return temp_file_name.replace("#", str(ver))
 
-    elif purpose == "OD":
-        temp_file_name = "OD #.txt"
+    elif purpose == "absorbance":
+        temp_file_name = "absorbance #.txt"
         ver = 1
         for file in os.listdir():
-            if file.startswith("OD"):
+            if file.startswith("absorbance"):
                 ver += 1
         return temp_file_name.replace("#", str(ver))
 
@@ -27,20 +27,6 @@ def saveData(data, FILE_NAME):
     with open(FILE_NAME, 'a') as f:
         f.write(str(data) + "\n")
         f.close()
-
-
-def ODdisplay(oled, value):
-    oled.fill(0)
-    oled.text("OD value: ", 0, 8)
-    oled.text(str(value), 10, 17)
-    oled.show()
-
-
-def TempDisplay(oled, temp):
-    oled.fill(0)
-    oled.text("Temperature: ", 0, 8)
-    oled.text(str(temp), 10, 17)
-    oled.show()
 
 
 def cleanTXTFiles():

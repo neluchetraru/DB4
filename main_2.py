@@ -1,90 +1,78 @@
-import machine
-import os
-import utime
-import time
-from read_temp import read_temp, init_temp_sensor
 from pump import Pump
-from MQTT import MQTT
-import utils
-from pid import PID
+import time
+from systemConstants import PIDControl, mqtt, PDSensor
+from concentrationController import handleConcentration, getConcentration
+from temperatureController import handleTemperature
+from machine import Timer
 import _thread
-import machine
-import ssd1306
+import utime
 
 
-TEMPERATURE_FILE_NAME = utils.getNewFileName("temperature")
-OD_FILE_NAME = utils.getNewFileName("OD")
-
-pump_algae = Pump(15, False)
-
-global PIDControl
-PIDControl = PID(2, 0.15, 0, 10, TEMPERATURE_FILE_NAME, OD_FILE_NAME)
-
-start_time = time.ticks_ms()
+running = True
+PUMP_ALGAE = Pump(15, True)
 
 
-# Web server
-mqtt = MQTT()
-mqtt.connectWIFI()
-mqtt.connectMQTT()
+class System:
+    def __init__(self):
+        self.running = True
 
-LED = machine.Pin(21, machine.Pin.OUT)
-LED.value(1)
+    def cb(self, topic, message):
+        topic = topic.decode('utf-8').split('/')[2]
+        global running
 
-pd = machine.ADC(machine.Pin(34))
-pd.atten(machine.ADC.ATTN_11DB)
-pd.width(machine.ADC.WIDTH_12BIT)
+        if topic == "startsystem":
+            if str(message, 'utf-8') == 'ON':
+                running = True
+            else:
+                PUMP_ALGAE.minSpeed()
+                PIDControl.pump.minSpeed()
+                running = False
+        elif topic == "desiredtemp":
+            print('test topic')
+            temp = int(message.decode('utf-8'))
+            PIDControl.updateTemp(temp)
 
+    def thread(self):
+        while True:
+            if running:
+                handleTemperature()
+                time.sleep(7.5)
+                handleConcentration()
+                time.sleep(7.5)
+            else:
+                time.sleep(10)
 
-global temp
+    def thread1(self):
+        while True:
+            if mqtt.online:
+                mqtt.client.check_msg()
+                time.sleep(1)
 
+    def feedingControl(self):
+        startFeed = utime.ticks_ms()
+        while True:
+            total = 0
+            for i in range(15):
+                total += getConcentration(PDSensor.getAbsorbance())
+            algae_concentration = total/15
 
-time_temp = time.ticks_ms()
-time_pd = time.ticks_ms()
+            volume_needed = (4000*937.5) / algae_concentration
+            time_needed = volume_needed / 0.605
+            if utime.ticks_diff(utime.ticks_ms(), startFeed) < time_needed * 1000:
+                PUMP_ALGAE.pump.freq(9000)
+            else:
+                PUMP_ALGAE.pump.freq(100)
+                time.sleep(5*60)  # 5 minutes
+                startFeed = utime.ticks_ms()
 
-i2c = machine.I2C(sda=machine.Pin(23), scl=machine.Pin(22), freq=100000)
-oled = ssd1306.SSD1306_I2C(128, 32, i2c)
-
-# mqtt.subscribeTemp(PIDControl)
-rev = 100
-steps = 0
-
-while True:
-    pump_algae.pump.value(1 if pump_algae.pump.value() == 0 else 0)
-    if time.ticks_diff(time.ticks_ms(), time_temp) >= 5000:  # CHANGEEEEEEEEEEEEEEEEEEEE
-        temp_sens = init_temp_sensor()
-        temp = read_temp(temp_sens)
-        # mqtt.publish('temperature', temp)
-        PIDControl.update(temp)
-        time_temp = time.ticks_ms()
-        # mqtt.client.check_msg()
-        utils.TempDisplay(oled, temp)
-        # print("Desired temperature -> " + str(PIDControl.desired_temp))
-        print("Actual temperature -> " + str(temp))
-        pd.atten(machine.ADC.ATTN_6DB)
-        pd.width(machine.ADC.WIDTH_12BIT)
-    if time.ticks_diff(time.ticks_ms(), time_pd) >= 2000:
-        value = pd.read()
-        # mqtt.publish('algaeConcentration', value)
-        print(value)
-        time_pd = time.ticks_ms()
-        utils.ODdisplay(oled, value)
-    # utils.saveData(value, OD_FILE_NAME)
-    # print(PIDControl.test)
-
-    steps += 1
-    if (steps / 2) >= 3200:
-        steps = 0
-        rev -= 1
-
-    if rev == 0:
-        break
-
-    # utime.sleep_ms(1)
-
-    # TODO: stop the motor when the system is down
-    # TODO: publish data
-    # TODO: subscribe data
+    def start(self):
+        if mqtt.online:
+            mqtt.subscribeData(self.cb, 'desiredtemp')
+            mqtt.subscribeData(self.cb, 'startsystem')
+        _thread.start_new_thread(self.feedingControl, ())
+        _thread.start_new_thread(self.thread, ())
+        _thread.start_new_thread(self.thread1, ())
 
 
-# playground
+sys = System()
+sys.start()

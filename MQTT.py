@@ -13,6 +13,7 @@ class MQTT:
         self.ADAFRUIT_IO_URL = b'io.adafruit.com'
         self.ADAFRUIT_USERNAME = b'chetraru_ion'
         self.ADAFRUIT_IO_KEY = b'aio_clNS70PuBy9vYl7XdUljW7JcLyw4'
+        self.online = False
 
     def connectWIFI(self):
         WIFI_SSID = "Juan's network"
@@ -25,18 +26,23 @@ class MQTT:
         # connect the device to the WiFi network
         self.wifi = network.WLAN(network.STA_IF)
         self.wifi.active(True)
-        self.wifi.connect(WIFI_SSID, WIFI_PASSWORD)
-
+        if not self.wifi.isconnected():
+            try:
+                self.wifi.connect(WIFI_SSID, WIFI_PASSWORD)
+            except:
+                return False
         # wait until the device is connected to the WiFi network
-        MAX_ATTEMPTS = 20
-        attempt_count = 0
-        while not self.wifi.isconnected() and attempt_count < MAX_ATTEMPTS:
-            attempt_count += 1
-            time.sleep(1)
+            MAX_ATTEMPTS = 5
+            attempt_count = 0
+            while not self.wifi.isconnected() and attempt_count < MAX_ATTEMPTS:
+                attempt_count += 1
+                time.sleep(1)
 
-        if attempt_count == MAX_ATTEMPTS:
-            print('Could not connect to the WiFi network')
-            print('Continuing offline')
+            if attempt_count == MAX_ATTEMPTS:
+                print('Could not connect to the WiFi network')
+                print('Continuing offline')
+                return False
+        return True
 
     def connectMQTT(self):
         client = MQTTClient(client_id=self.mqtt_client_id,
@@ -52,24 +58,24 @@ class MQTT:
                 type(e).__name__, e))
             sys.exit()
 
-    def publish(self, feed, value):
-        if not self.wifi.isconnected():
-            print("No internet connection. Working offline.")
-            return -1
+    def connect(self):
+        self.connectWIFI()
+        if self.wifi.isconnected():
+            self.connectMQTT()
+            self.online = True
         else:
+            self.online = False
+
+    def publish(self, feed, value):
+        if self.online:
             mqtt_feedname = bytes(
                 '{:s}/feeds/{:s}'.format(self.ADAFRUIT_USERNAME, feed), 'utf-8')
             self.client.publish(mqtt_feedname, bytes(
                 str(value), 'utf-8'), qos=0)
-            return 0
 
-    def subscribeTemp(self, PIDControl):
-        def cbTemp(_, newTemp):
-            print("New temperature change registered: " + str(newTemp, 'utf-8'))
-            PIDControl.updateTemp(int(str(newTemp, 'utf-8')))
-        if not self.wifi.isconnected():
-            print("No internet connection. Working offline.")
-        else:
-            mqtt_feedname = bytes('chetraru_ion/feeds/desiredtemp', 'utf-8')
-            self.client.set_callback(cbTemp)
+    def subscribeData(self, cb, feed):
+        if self.online:
+            mqtt_feedname = bytes(
+                'chetraru_ion/feeds/{}'.format(feed), 'utf-8')
+            self.client.set_callback(cb)
             self.client.subscribe(mqtt_feedname)
